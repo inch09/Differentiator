@@ -29,6 +29,7 @@ tree_diff_node_t* create_node(type_of_node type, double val, tree_diff_node_t* l
 void delete_node(tree_diff_node_t* node);
 void delete_tree(tree_diff_node_t* node);
 //-----------------------------------------------------------------
+void link_nodes(tree_diff_node_t* parent, tree_diff_node_t* left, tree_diff_node_t* right);
 void set_node_left(tree_diff_node_t* node, tree_diff_node_t* left);
 void set_node_right(tree_diff_node_t* node, tree_diff_node_t* right);
 void set_node_parent(tree_diff_node_t* node, tree_diff_node_t* parent);
@@ -47,17 +48,23 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
 //-----------------------------------------------------------------
 int main(){
     tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
-    tree_diff_node_t* node2 = create_node(NUM, 3, NULL, NULL, NULL);
-    tree_diff_node_t* node3 = create_node(NUM, 4, NULL, NULL, NULL);
-    set_node_left(node1, node2);
-    set_node_right(node1, node3);
-    set_node_parent(node2, node1);
-    set_node_parent(node3, node1);
+    tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
+    tree_diff_node_t* node3 = create_node(NUM, 3, NULL, NULL, NULL);
+    tree_diff_node_t* node4 = create_node(NUM, 4, NULL, NULL, NULL);
+    tree_diff_node_t* node5 = create_node(OP, 2, NULL, NULL, NULL);
+    tree_diff_node_t* node6 = create_node(NUM, 7, NULL, NULL, NULL);
+    tree_diff_node_t* node7 = create_node(NUM, 8, NULL, NULL, NULL);
+
+    link_nodes(node1, node2, node5);
+    link_nodes(node2, node3, node4);
+    link_nodes(node5, node6, node7);
 
     FILE* viz_file = fopen("viz_file.txt", "w");
     assert(viz_file);
 
     printf("%lf\n", calculate_subtree(node1));
+    printf("%lf\n", calculate_subtree(node2));
+
 
     tree_viz(node1, viz_file);
     delete_tree(node1);
@@ -82,12 +89,7 @@ tree_diff_node_t* create_node(type_of_node type, double val, tree_diff_node_t* l
 //-----------------------------------------------------------------
 void delete_node(tree_diff_node_t* node){
     assert(node);
-    
-    free(node->left);
-    free(node->right);
-    free(node->parent);
     free(node);
-
     return;
 }
 //-----------------------------------------------------------------
@@ -98,6 +100,20 @@ void delete_tree(tree_diff_node_t* node){
     if(is_node_have_right(node)) delete_tree(node->right);
 
     delete_node(node);
+}
+//----------------------------------------------------------------------------
+void link_nodes(tree_diff_node_t* parent, tree_diff_node_t* left, tree_diff_node_t* right){
+    assert(parent);
+    assert(left || right);
+    
+    if(left != NULL){
+        set_node_left   (parent, left);
+        set_node_parent (left, parent);
+    }
+    if(right != NULL){
+        set_node_right  (parent, right);
+        set_node_parent (right, parent);
+    }
 }    
 //-----------------------------------------------------------------
 void set_node_left(tree_diff_node_t* node, tree_diff_node_t* left){
