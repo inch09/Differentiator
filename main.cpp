@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <string.h>
+#include <math.h>
 //-----------------------------------------------------------------
 enum type_of_node{
     OP  = 0,
@@ -41,6 +42,9 @@ void create_op_node_viz(tree_diff_node_t* node, FILE* viz_file);
 void create_var_node_viz(tree_diff_node_t* node, FILE* viz_file);
 void create_num_node_viz(tree_diff_node_t* node, FILE* viz_file);
 //-----------------------------------------------------------------
+double calculate_subtree(tree_diff_node_t* node);
+double calculate_operation(tree_diff_node_t* node, double operand1, double operand2);
+//-----------------------------------------------------------------
 int main(){
     tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
     tree_diff_node_t* node2 = create_node(NUM, 3, NULL, NULL, NULL);
@@ -52,6 +56,8 @@ int main(){
 
     FILE* viz_file = fopen("viz_file.txt", "w");
     assert(viz_file);
+
+    printf("%lf\n", calculate_subtree(node1));
 
     tree_viz(node1, viz_file);
     delete_tree(node1);
@@ -236,10 +242,54 @@ double calculate_subtree(tree_diff_node_t* node){
     assert(node);
 
     if(node->type == NUM) return node->val;
-    if(node->type == VAR) return 0;//////
-
+    if(node->type == VAR) return 0;//////fix val of var
     if(node->type == OP){
-        if(is_node_have_left(node))  calculate_subtree(node->left);
-        if(is_node_have_right(node)) calculate_subtree(node->right);
+        double operand1 = NAN;
+        double operand2 = NAN;
+        if(is_node_have_left(node))  operand1 = calculate_subtree(node->left);
+        if(is_node_have_right(node)) operand2 = calculate_subtree(node->right);
+        return calculate_operation(node, operand1, operand2);
+    }
+
+    return NAN;
+}
+//----------------------------------------------------------------------------
+double calculate_operation(tree_diff_node_t* node, double operand1, double operand2){
+    assert(node);
+    assert(node->type == OP);
+
+    switch ((int) node->val/*fix enum*/)
+    {
+    case 0:
+        if(isnan(operand1) || isnan(operand2)){
+            printf("Operands error\n");
+            assert(0);
+        }    
+        return operand1 + operand2;
+    case 1:
+        if(isnan(operand1) || isnan(operand2)){
+            printf("Operands error\n");
+            assert(0);
+        }    
+        return operand1 - operand2;
+    case 2:
+        if(isnan(operand1) || isnan(operand2)){
+            printf("Operands error\n");
+            assert(0);
+        }    
+        return operand1 * operand2;
+    case 3:
+        if(isnan(operand1) || isnan(operand2)){
+            printf("Operands error\n");
+            assert(0);
+        }
+        if(operand2 == 0){
+            printf("Division by zero\n");
+            assert(0);
+        }     
+        return operand1 / operand2;
+    default:
+        printf("Invalid type of operatiom\n");
+        return NAN;
     }
 }
