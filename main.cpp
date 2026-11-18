@@ -232,3 +232,14 @@ void create_edge_viz(tree_diff_node_t* node, FILE* viz_file){
 }
 
 //----------------------------------------------------------------------------
+double calculate_subtree(tree_diff_node_t* node){
+    assert(node);
+
+    if(node->type == NUM) return node->val;
+    if(node->type == VAR) return 0;//////
+
+    if(node->type == OP){
+        if(is_node_have_left(node))  calculate_subtree(node->left);
+        if(is_node_have_right(node)) calculate_subtree(node->right);
+    }
+}
