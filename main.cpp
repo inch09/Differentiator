@@ -46,6 +46,10 @@ void create_num_node_viz(tree_diff_node_t* node, FILE* viz_file);
 double calculate_subtree(tree_diff_node_t* node);
 double calculate_operation(tree_diff_node_t* node, double operand1, double operand2);
 //-----------------------------------------------------------------
+tree_diff_node_t* diff(tree_diff_node_t* node);
+tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
+tree_diff_node_t* node_copy(tree_diff_node_t* node);
+//-----------------------------------------------------------------
 int main(){
     tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
     tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
@@ -65,8 +69,9 @@ int main(){
     printf("%lf\n", calculate_subtree(node1));
     printf("%lf\n", calculate_subtree(node2));
 
+    tree_diff_node_t* copy_root = subtree_copy(node1);
 
-    tree_viz(node1, viz_file);
+    tree_viz(copy_root, viz_file);
     delete_tree(node1);
 
     fclose(viz_file);
@@ -104,7 +109,6 @@ void delete_tree(tree_diff_node_t* node){
 //----------------------------------------------------------------------------
 void link_nodes(tree_diff_node_t* parent, tree_diff_node_t* left, tree_diff_node_t* right){
     assert(parent);
-    assert(left || right);
     
     if(left != NULL){
         set_node_left   (parent, left);
@@ -313,20 +317,56 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
 tree_diff_node_t* diff(tree_diff_node_t* node){
     assert(node);
 
-    if(node->type == NUM) return create_node(NUM, 0, NULL, NULL);
-    if(node->type == VAR) return create_node(NUM, 1, NULL, NULL);
+    if(node->type == NUM) return create_node(NUM, 0, NULL, NULL, NULL);
+    if(node->type == VAR) return create_node(NUM, 1, NULL, NULL, NULL);
     if(node->type == OP){
         switch((int) node->val){
             case 0:{
-                tree_diff_node_t* add_node = create_node(OP, 0, NULL, NULL, node);
+                tree_diff_node_t* add_node = create_node(OP, 0, NULL, NULL, NULL);
                 tree_diff_node_t* diff_left  = diff(node->left);
                 tree_diff_node_t* diff_right = diff(node->right);
                 link_nodes(add_node, diff_left, diff_right);
-                
+                return add_node;
             }
-            case 1:
+            case 1:{
+                tree_diff_node_t* add_node  = create_node(OP, 0, NULL, NULL, NULL);
+                tree_diff_node_t* mul_node1 = create_node(OP, 2, NULL, NULL, NULL);
+                tree_diff_node_t* mul_node2 = create_node(OP, 2, NULL, NULL, NULL);
+                link_nodes(add_node, mul_node1, mul_node2);
+            }
             case 2:
-            case 3:    
+                break;
+            case 3:   
+                break; 
         }
     }
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* subtree_copy(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* left_child = NULL;
+    tree_diff_node_t* right_child = NULL;
+    if(is_node_have_left(node))  left_child  = subtree_copy(node->left);
+    if(is_node_have_right(node)) right_child = subtree_copy(node->right);
+
+    tree_diff_node_t* copy_node = node_copy(node);
+    if(left_child != NULL || right_child != NULL) link_nodes(copy_node, left_child, right_child);
+
+    return copy_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* node_copy(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* copy_node = (tree_diff_node_t*) calloc(1, sizeof(tree_diff_node_t));
+    assert(copy_node);
+
+    copy_node->type = node->type;
+    copy_node->val = node->val;
+    copy_node->left = node->left;
+    copy_node->right = node->right;
+    copy_node->parent = node->parent;
+
+    return copy_node;
 }
