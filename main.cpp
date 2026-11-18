@@ -309,3 +309,24 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
         return NAN;
     }
 }
+//----------------------------------------------------------------------------
+tree_diff_node_t* diff(tree_diff_node_t* node){
+    assert(node);
+
+    if(node->type == NUM) return create_node(NUM, 0, NULL, NULL);
+    if(node->type == VAR) return create_node(NUM, 1, NULL, NULL);
+    if(node->type == OP){
+        switch((int) node->val){
+            case 0:{
+                tree_diff_node_t* add_node = create_node(OP, 0, NULL, NULL, node);
+                tree_diff_node_t* diff_left  = diff(node->left);
+                tree_diff_node_t* diff_right = diff(node->right);
+                link_nodes(add_node, diff_left, diff_right);
+                
+            }
+            case 1:
+            case 2:
+            case 3:    
+        }
+    }
+}
