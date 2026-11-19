@@ -52,13 +52,13 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
 tree_diff_node_t* diff(tree_diff_node_t* node);
 tree_diff_node_t* deritative_sum(tree_diff_node_t* node);
 tree_diff_node_t* deritative_difference(tree_diff_node_t* node);
-tree_diff_node_t* derivative_product(tree_diff_node_t* node);
-tree_diff_node_t* derivative_quotient(tree_diff_node_t* node);
+tree_diff_node_t* deritative_product(tree_diff_node_t* node);
+tree_diff_node_t* deritative_quotient(tree_diff_node_t* node);
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 int main(){
-    tree_diff_node_t* node1 = create_node(OP, 3, NULL, NULL, NULL);
+    tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
     tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
     tree_diff_node_t* node3 = create_node(VAR, 0, NULL, NULL, NULL);
     tree_diff_node_t* node4 = create_node(VAR, 0, NULL, NULL, NULL);
@@ -81,14 +81,16 @@ int main(){
     //printf("%lf\n", calculate_subtree(node1));
     //printf("%lf\n", calculate_subtree(node2));
 
-    tree_diff_node_t* copy_root = subtree_copy(node1);
-    tree_diff_node_t* diff_tree = diff(copy_root);
+    // tree_diff_node_t* copy_root = subtree_copy(node1);
+    tree_diff_node_t* diff_tree = diff(node1);
 
     tree_viz(diff_tree, file_with_deritative);
     tree_viz(node1, viz_file);
-    tex_viz_of_tree(subtree_copy(node1), formula_tex);
+    tex_viz_of_tree(diff_tree, formula_tex);
 
-    printf("%lf\n", calculate_subtree(diff_tree, 10));
+    printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
+    printf("%lf\n", calculate_subtree((diff_tree->left)->left, 0));
+
     delete_tree(node1);
 
     fclose(file_with_deritative);
@@ -181,16 +183,17 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
     assert(tex_file);
 
     if(node->type == NUM){ 
-        fprintf(tex_file, "%lf", node->val);
+        printf("%lg\n", node->val);
+        fprintf(tex_file, "{%lg}", node->val);
         return;
     }
     if(node->type == VAR){
         switch((int) node->val){
             case 0:
-                fprintf(tex_file, "x");
+                fprintf(tex_file, "{x}");
                 return;
             case 1:
-                fprintf(tex_file, "y");
+                fprintf(tex_file, "{y}");
                 return;
             default:
                 fprintf(tex_file, "Invalid variable\n");
@@ -200,31 +203,23 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
     if(node->type == OP){
         switch ((int) node->val){
         case 0:
-            fprintf(tex_file, "{");
+            fprintf(tex_file, "(");
             tex_viz_of_nodes(node->left, tex_file);
-            fprintf(tex_file, "}");
             fprintf(tex_file, "+");
-            fprintf(tex_file, "{");
             tex_viz_of_nodes(node->right, tex_file);
-            fprintf(tex_file, "}");
+            fprintf(tex_file, ")");
             return;
         case 1:
-            fprintf(tex_file, "{");
+            fprintf(tex_file, "(");
             tex_viz_of_nodes(node->left, tex_file);
-            fprintf(tex_file, "}");
             fprintf(tex_file, "-");
-            fprintf(tex_file, "{");
             tex_viz_of_nodes(node->right, tex_file);
-            fprintf(tex_file, "}");
+            fprintf(tex_file, ")");
             return;
         case 2:
-            fprintf(tex_file, "{");
             tex_viz_of_nodes(node->left, tex_file);
-            fprintf(tex_file, "}");
             fprintf(tex_file, "*");
-            fprintf(tex_file, "{");
             tex_viz_of_nodes(node->right, tex_file);
-            fprintf(tex_file, "}");
             return;
         case 3:
             fprintf(tex_file, "\\frac{");
@@ -421,9 +416,9 @@ tree_diff_node_t* diff(tree_diff_node_t* node){
             case 1:
                 return deritative_difference(node);
             case 2:
-                return derivative_product(node);
+                return deritative_product(node);
             case 3:
-                return derivative_quotient(node);
+                return deritative_quotient(node);
         }
     }
 
@@ -455,7 +450,7 @@ tree_diff_node_t* deritative_difference(tree_diff_node_t* node){
     return sub_node;
 }
 //----------------------------------------------------------------------------
-tree_diff_node_t* derivative_product(tree_diff_node_t* node){
+tree_diff_node_t* deritative_product(tree_diff_node_t* node){
     assert(node);
     assert(node->type == OP);
     assert((int) node->val == 2);
@@ -466,17 +461,17 @@ tree_diff_node_t* derivative_product(tree_diff_node_t* node){
     link_nodes(add_node, mul_node1, mul_node2);
 
     tree_diff_node_t* diff_left  = diff(node->left);
-    tree_diff_node_t* right_copy = node_copy(node->right);
+    tree_diff_node_t* right_copy = subtree_copy(node->right);
     link_nodes(mul_node1, diff_left, right_copy);
 
     tree_diff_node_t* diff_right = diff(node->right);
-    tree_diff_node_t* left_copy = node_copy(node->left);
+    tree_diff_node_t* left_copy = subtree_copy(node->left);
     link_nodes(mul_node2, diff_right, left_copy);
 
     return add_node;
 }
 //----------------------------------------------------------------------------
-tree_diff_node_t* derivative_quotient(tree_diff_node_t* node){
+tree_diff_node_t* deritative_quotient(tree_diff_node_t* node){
     assert(node);
     assert(node->type == OP);
     assert((int) node->val == 3);
@@ -492,15 +487,15 @@ tree_diff_node_t* derivative_quotient(tree_diff_node_t* node){
     link_nodes(sub_node, mul_node1, mul_node2);
 
     tree_diff_node_t* diff_left  = diff(node->left);
-    tree_diff_node_t* right_copy1 = node_copy(node->right);
+    tree_diff_node_t* right_copy1 = subtree_copy(node->right);
     link_nodes(mul_node1, diff_left, right_copy1);
 
     tree_diff_node_t* diff_right = diff(node->right);
-    tree_diff_node_t* left_copy = node_copy(node->left);
+    tree_diff_node_t* left_copy = subtree_copy(node->left);
     link_nodes(mul_node2, diff_right, left_copy);
 
-    tree_diff_node_t* right_copy2 = node_copy(node->right);// возможно не надо две копии создавать, подумать над этим
-    tree_diff_node_t* right_copy3 = node_copy(node->right);
+    tree_diff_node_t* right_copy2 = subtree_copy(node->right);// возможно не надо две копии создавать, подумать над этим
+    tree_diff_node_t* right_copy3 = subtree_copy(node->right);
     link_nodes(mul_sqr_node, right_copy2, right_copy3);
 
     return div_node;
