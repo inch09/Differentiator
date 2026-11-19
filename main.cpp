@@ -58,7 +58,7 @@ tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 int main(){
-    tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
+    tree_diff_node_t* node1 = create_node(OP, 3, NULL, NULL, NULL);
     tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
     tree_diff_node_t* node3 = create_node(VAR, 0, NULL, NULL, NULL);
     tree_diff_node_t* node4 = create_node(VAR, 0, NULL, NULL, NULL);
@@ -218,7 +218,7 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
             return;
         case 2:
             tex_viz_of_nodes(node->left, tex_file);
-            fprintf(tex_file, "*");
+            fprintf(tex_file, "\\cdot");
             tex_viz_of_nodes(node->right, tex_file);
             return;
         case 3:
