@@ -36,6 +36,9 @@ void set_node_parent(tree_diff_node_t* node, tree_diff_node_t* parent);
 bool is_node_have_left(tree_diff_node_t* node);
 bool is_node_have_right(tree_diff_node_t* node);
 //-----------------------------------------------------------------
+void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file);
+void tex_viz_of_tree(tree_diff_node_t* node, FILE* tex_file);
+//-----------------------------------------------------------------
 void tree_viz(tree_diff_node_t* root, FILE* viz_file);
 void create_node_viz(tree_diff_node_t* node, FILE* viz_file);
 void create_edge_viz(tree_diff_node_t* node, FILE* viz_file);
@@ -72,6 +75,9 @@ int main(){
 
     FILE* file_with_deritative = fopen("file_with_deritative.txt", "w");
     assert(file_with_deritative);
+    
+    FILE* formula_tex = fopen("formula.tex", "w");
+    assert(formula_tex);
     //printf("%lf\n", calculate_subtree(node1));
     //printf("%lf\n", calculate_subtree(node2));
 
@@ -80,12 +86,14 @@ int main(){
 
     tree_viz(diff_tree, file_with_deritative);
     tree_viz(node1, viz_file);
+    tex_viz_of_tree(subtree_copy(node1), formula_tex);
 
     printf("%lf\n", calculate_subtree(diff_tree, 10));
     delete_tree(node1);
 
     fclose(file_with_deritative);
     fclose(viz_file);
+    fclose(formula_tex);
     return 0;
 }
 //-----------------------------------------------------------------
@@ -164,6 +172,7 @@ void tex_viz_of_tree(tree_diff_node_t* node, FILE* tex_file){
     assert(tex_file);
 
     fprintf(tex_file, "$");
+    tex_viz_of_nodes(node, tex_file);
     fprintf(tex_file, "$");
 }
 //-----------------------------------------------------------------
@@ -189,15 +198,44 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
         }
     }
     if(node->type == OP){
-        switch (OP){
+        switch ((int) node->val){
         case 0:
-            /* code */
-            break;
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, "+");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}");
+            return;
         case 1:
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, "-");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}");
+            return;
         case 2:
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, "*");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}");
+            return;
         case 3:
+            fprintf(tex_file, "\\frac{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}");
+            return;
         default:
-            fprintf("Invalid type of operation\n");
+            fprintf(tex_file, "Invalid type of operation\n");
             return;
         }
     }
