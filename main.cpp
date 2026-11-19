@@ -55,13 +55,13 @@ tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 int main(){
-    tree_diff_node_t* node1 = create_node(OP, 2, NULL, NULL, NULL);
+    tree_diff_node_t* node1 = create_node(OP, 3, NULL, NULL, NULL);
     tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node3 = create_node(NUM, 3, NULL, NULL, NULL);
-    tree_diff_node_t* node4 = create_node(NUM, 4, NULL, NULL, NULL);
+    tree_diff_node_t* node3 = create_node(VAR, 0, NULL, NULL, NULL);
+    tree_diff_node_t* node4 = create_node(VAR, 0, NULL, NULL, NULL);
     tree_diff_node_t* node5 = create_node(OP, 2, NULL, NULL, NULL);
     tree_diff_node_t* node6 = create_node(VAR, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node7 = create_node(NUM, 8, NULL, NULL, NULL);
+    tree_diff_node_t* node7 = create_node(VAR, 0, NULL, NULL, NULL);
 
     link_nodes(node1, node2, node5);
     link_nodes(node2, node3, node4);
@@ -81,7 +81,7 @@ int main(){
     tree_viz(diff_tree, file_with_deritative);
     tree_viz(node1, viz_file);
 
-    printf("%lf\n", calculate_subtree(diff_tree, 2));
+    printf("%lf\n", calculate_subtree(diff_tree, 10));
     delete_tree(node1);
 
     fclose(file_with_deritative);
@@ -157,6 +157,52 @@ bool is_node_have_left(tree_diff_node_t* node){
 bool is_node_have_right(tree_diff_node_t* node){
     assert(node);
     return (node->right != NULL);
+}
+//-----------------------------------------------------------------
+void tex_viz_of_tree(tree_diff_node_t* node, FILE* tex_file){
+    assert(node);
+    assert(tex_file);
+
+    fprintf(tex_file, "$");
+    fprintf(tex_file, "$");
+}
+//-----------------------------------------------------------------
+void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
+    assert(node);
+    assert(tex_file);
+
+    if(node->type == NUM){ 
+        fprintf(tex_file, "%lf", node->val);
+        return;
+    }
+    if(node->type == VAR){
+        switch((int) node->val){
+            case 0:
+                fprintf(tex_file, "x");
+                return;
+            case 1:
+                fprintf(tex_file, "y");
+                return;
+            default:
+                fprintf(tex_file, "Invalid variable\n");
+                return;
+        }
+    }
+    if(node->type == OP){
+        switch (OP){
+        case 0:
+            /* code */
+            break;
+        case 1:
+        case 2:
+        case 3:
+        default:
+            fprintf("Invalid type of operation\n");
+            return;
+        }
+    }
+
+    fprintf(tex_file, "Invalid type of node\n");
 }
 //-----------------------------------------------------------------
 void tree_viz(tree_diff_node_t* root, FILE* viz_file){
