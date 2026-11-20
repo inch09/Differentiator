@@ -469,6 +469,10 @@ tree_diff_node_t* diff(tree_diff_node_t* node){
                 return deritative_quotient(node);
             case 4:
                 return deritative_general_pow_function(node);
+            case 5:
+                return deritative_logarithm_function(node);
+            default:
+                return;
         }
     }
 
@@ -685,6 +689,51 @@ tree_diff_node_t* deritative_pow_and_exponential_function(tree_diff_node_t* node
     link_nodes(second_factor_in_second_addend, numerator_node, denumerator_node);
 
     return global_mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_log_function(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->type == 5);
+
+    if((node->right)->type == NUM && (node->left)->type == NUM) return _NUM(0);
+    if((node->left)->type == NUM) return deritative_log_with_const_base_function(node);  
+    
+    return deritative_general_log_function(node);
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_log_with_const_base_function(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->type == 5);
+    assert((node->left)->type == NUM);
+
+    if((node->right)->type == NUM) return _NUM(0);
+    if((node->right)->type == VAR || (node->right)->type == OP){
+        tree_diff_node_t* div_node = _OP(3);
+        tree_diff_node_t* numerator_node = _DIFFR(node);
+        tree_diff_node_t* denumerator_node = _OP(2);
+        link_nodes(div_node, numerator_node, denumerator_node);
+
+        tree_diff_node_t* first_factor_in_denumerator = _COPYR(node);
+        tree_diff_node_t* second_factor_in_denumerator = _OP(5);
+        tree_diff_node_t* base_of_logarithm = _NUM(E);
+        tree_diff_node_t* argument_of_logarithm = _NUM((node->left)->val);
+        link_nodes(denumerator_node, first_factor_in_denumerator, second_factor_in_denumerator);
+        link_nodes(second_factor_in_denumerator, base_of_logarithm, argument_of_logarithm);
+
+        return div_node;
+    }
+
+    
+    printf("INVALID NODE TYPE\n");
+    return NULL;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_general_log_function(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert(node->val == 5);
 }
 //----------------------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node){
