@@ -293,22 +293,22 @@ void create_op_node_viz(tree_diff_node_t* node, FILE* viz_file){
     switch ((int) node->val/*fix enum*/)
     {
     case 0:
-        strcpy(oper_name, "ADD");
+        strcpy(oper_name, "+");
         break;  
     case 1:
-        strcpy(oper_name, "SUB");
+        strcpy(oper_name, "-");
         break;
     case 2:
-        strcpy(oper_name, "MUL");
+        strcpy(oper_name, "*");
         break;
     case 3:
-        strcpy(oper_name, "DIV");
+        strcpy(oper_name, "/");
         break;
     default:
         printf("Invalid type of operatiom\n");
         break;
     }
-    fprintf(viz_file, "node%p[shape = Mrecord, label = \"{OP | %s}\"];\n", (void*) node, oper_name);
+    fprintf(viz_file, "node%p[shape = circle, label = \"%s\", style = \"filled\", fillcolor = \"#8cd1e4\"];\n", (void*) node, oper_name);
 
 }
 //----------------------------------------------------------------------------
@@ -328,7 +328,7 @@ void create_var_node_viz(tree_diff_node_t* node, FILE* viz_file){
             strcpy(var_name, "y");
             break;
     }
-    fprintf(viz_file, "node%p[shape = Mrecord, label = \"{VAR | %s}\"];\n", (void*) node, var_name);
+    fprintf(viz_file, "node%p[shape = square, label = \"%s\", style = \"filled\", fillcolor = \"#fff0b6\"];\n", (void*) node, var_name);
 
 }
 //----------------------------------------------------------------------------
@@ -337,7 +337,7 @@ void create_num_node_viz(tree_diff_node_t* node, FILE* viz_file){
     assert(viz_file);
     assert(node->type == NUM);
 
-    fprintf(viz_file, "node%p[shape = Mrecord, label = \"{NUM | %lf}\"];\n", (void*) node, node->val);
+    fprintf(viz_file, "node%p[shape = Mrecord, label = \"%lg\", style = \"filled\", fillcolor = \"#f79eef\"];\n", (void*) node, node->val);
 }
 //----------------------------------------------------------------------------
 void create_edge_viz(tree_diff_node_t* node, FILE* viz_file){
