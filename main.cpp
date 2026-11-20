@@ -89,7 +89,6 @@ int main(){
     tex_viz_of_tree(diff_tree, formula_tex);
 
     printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
-    printf("%lf\n", calculate_subtree((diff_tree->left)->left, 0));
 
     delete_tree(node1);
 
