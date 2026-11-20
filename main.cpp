@@ -253,6 +253,24 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
             tex_viz_of_nodes(node->right, tex_file);
             fprintf(tex_file, "}");
             return;
+        case 4:
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, "^");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}");
+            return;
+        case 5:
+            fprintf(tex_file, "{log_{");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "}");
+            fprintf(tex_file, " ");
+            fprintf(tex_file, "{");
+            tex_viz_of_nodes(node->right, tex_file);
+            fprintf(tex_file, "}}");
+            return;
         default:
             fprintf(tex_file, "Invalid type of operation\n");
             return;
