@@ -28,7 +28,11 @@ enum type_of_operation{
     MUL = 2,
     DIV = 3,
     POW = 4,
-    LOG = 5
+    LOG = 5,
+    SIN = 6,
+    COS = 7,
+    TG = 8,
+    CTG = 9,
 };
 //-----------------------------------------------------------------
 struct tree_diff_node_t{
@@ -780,6 +784,91 @@ tree_diff_node_t* deritative_general_log_function(tree_diff_node_t* node){
     link_nodes(numerator, minuend, subtrahend);
 
     return div_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_sin(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->val == 6);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* cos_node = _OP(7);
+    tree_diff_node_t* cos_arg = _COPYL(node);
+    link_nodes(cos_node, cos_arg, NULL);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, cos_node, second_factor);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_cos(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->val == 7);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* negative_mul_node = _OP(2);
+    tree_diff_node_t* minus_one = _NUM(-1);
+    tree_diff_node_t* sin_node = _OP(6);
+    link_nodes(negative_mul_node, minus_one, sin_node);
+    tree_diff_node_t* sin_arg = _COPYL(node);
+    link_nodes(sin_node, sin_arg, NULL);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, negative_mul_node, second_factor);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_tg(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->val == 8);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* first_factor = _OP(3);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, first_factor, second_factor);
+
+    tree_diff_node_t* num_first_factor = _NUM(1);
+    tree_diff_node_t* denum_first_factor = _OP(4);
+    link_nodes(first_factor, num_first_factor, denum_first_factor);
+
+    tree_diff_node_t* cos_node = _OP(7);
+    tree_diff_node_t* cos_arg = _COPYL(node); 
+    link_nodes(cos_node, cos_arg, NULL);
+
+    tree_diff_node_t* exp_of_cos = _NUM(2);
+    link_nodes(denum_first_factor, cos_node, exp_of_cos);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_ctg(tree_diff_node_t* node){
+    assert(node);
+    assert(node->type == OP);
+    assert((int) node->val == 9);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* negative_first_factor = _OP(2);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, negative_first_factor, second_factor);
+
+    tree_diff_node_t* minus_one = _NUM(-1);
+    tree_diff_node_t* fraction = _OP(3);
+    link_nodes(negative_first_factor, minus_one, fraction);
+
+    tree_diff_node_t* num_of_fraction = _NUM(1);
+    tree_diff_node_t* denum_of_fraction = _OP(4);
+    link_nodes(fraction, num_of_fraction, denum_of_fraction);
+
+    tree_diff_node_t* sin_node = _OP(6);
+    tree_diff_node_t* sin_arg = _COPYL(node); 
+    link_nodes(sin_node, sin_arg, NULL);
+
+    tree_diff_node_t* exp_of_sin = _NUM(2);
+    link_nodes(denum_of_fraction, sin_node, exp_of_sin);
+
+    return mul_node;
 }
 //----------------------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node){
