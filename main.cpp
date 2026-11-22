@@ -33,6 +33,10 @@ enum type_of_operation{
     COS = 7,
     TG = 8,
     CTG = 9,
+    ARCSIN = 10,
+    ARCCOS = 11,
+    ARCTG = 12,
+    ARCCTG = 13
 };
 //-----------------------------------------------------------------
 struct tree_diff_node_t{
@@ -86,6 +90,10 @@ tree_diff_node_t* deritative_sin(tree_diff_node_t* node);
 tree_diff_node_t* deritative_cos(tree_diff_node_t* node);
 tree_diff_node_t* deritative_tg(tree_diff_node_t* node);
 tree_diff_node_t* deritative_ctg(tree_diff_node_t* node);
+tree_diff_node_t* deritative_arcsin(tree_diff_node_t* node);
+tree_diff_node_t* deritative_arccos(tree_diff_node_t* node);
+tree_diff_node_t* deritative_arctg(tree_diff_node_t* node);
+tree_diff_node_t* deritative_arcctg(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
@@ -126,6 +134,13 @@ int main(){
     link_nodes(cos, cos_arg, NULL);
 
 //-----------------------------------------------------------------
+    tree_diff_node_t* arcsin = _OP(10);
+    tree_diff_node_t* arg_arcsin = _OP(4);
+    tree_diff_node_t* base_pow_arg_arcsin = _VAR(0);
+    tree_diff_node_t* exp_pow_arg_arcsin = _NUM(2);
+    link_nodes(arg_arcsin, base_pow_arg_arcsin, exp_pow_arg_arcsin);
+    link_nodes(arcsin, arg_arcsin, NULL);
+// ----------------------------------------------------------------
 
 
     FILE* viz_file = fopen("viz_file.txt", "w");
@@ -140,10 +155,10 @@ int main(){
     //printf("%lf\n", calculate_subtree(node2));
 
     // tree_diff_node_t* copy_root = subtree_copy(node1);
-    tree_diff_node_t* diff_tree = diff(div_node);
+    tree_diff_node_t* diff_tree = diff(arcsin);
 
     tree_viz(diff_tree, file_with_deritative);
-    tree_viz(div_node, viz_file);
+    tree_viz(arcsin, viz_file);
     tex_viz_of_tree(diff_tree, formula_tex);
 
     //printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
@@ -323,7 +338,27 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
             fprintf(tex_file, "\\cot({");
             tex_viz_of_nodes(node->left, tex_file);
             fprintf(tex_file, "})");
-            return;    
+            return;
+        case 10:
+            fprintf(tex_file, "\\arcsin({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 11:
+            fprintf(tex_file, "\\arccos({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 12:
+            fprintf(tex_file, "\\arctan({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 13:
+            fprintf(tex_file, "\\arctan({");//////fix in tex net arccot
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");  
+            return;  
         default:
             fprintf(tex_file, "Invalid type of operation\n");
             return;
@@ -409,6 +444,18 @@ void create_op_node_viz(tree_diff_node_t* node, FILE* viz_file){
         break;  
     case 9:
         strcpy(oper_name, "ctg");
+        break;        
+    case 10:
+        strcpy(oper_name, "arcsin");
+        break;
+    case 11:
+        strcpy(oper_name, "arccos");
+        break;
+    case 12:
+        strcpy(oper_name, "arctg");
+        break;  
+    case 13:
+        strcpy(oper_name, "arcctg");
         break;                
     default:
         printf("Invalid type of operatiom\n");
@@ -503,6 +550,10 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
     case 7: return cos(operand1);
     case 8: return tan(operand1);
     case 9: return 1 / tan(operand1);
+    case 10: return asin(operand1); 
+    case 11: return acos(operand1);
+    case 12: return atan(operand1);
+    case 13: return (M_PI / 2) - atan(operand1);
 
 
     default:
@@ -537,7 +588,15 @@ tree_diff_node_t* diff(tree_diff_node_t* node){
             case 8:
                 return deritative_tg(node);
             case 9:
-                return deritative_ctg(node);    
+                return deritative_ctg(node);   
+            case 10:
+                return deritative_arcsin(node);
+            case 11:
+                return deritative_arccos(node);
+            case 12:
+                return deritative_arctg(node);
+            case 13:
+                return deritative_arcctg(node);     
             default:
                 return NULL;
         }
@@ -648,7 +707,7 @@ tree_diff_node_t* deritative_pow_function(tree_diff_node_t* node){
         tree_diff_node_t* second_factor = _OP(4);
         link_nodes(mul_node, first_factor, second_factor);
 
-        tree_diff_node_t* var_node = _VAR(node->val);
+        tree_diff_node_t* var_node = _VAR((node->left)->val);
         tree_diff_node_t* pow_node = _NUM(((node->right)->val) - 1);
         link_nodes(second_factor, var_node, pow_node);
         return mul_node;
@@ -927,6 +986,106 @@ tree_diff_node_t* deritative_ctg(tree_diff_node_t* node){
 
     tree_diff_node_t* exp_of_sin = _NUM(2);
     link_nodes(denum_of_fraction, sin_node, exp_of_sin);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_arcsin(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* first_factor = _OP(3);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, first_factor, second_factor);
+
+    tree_diff_node_t* numerator = _NUM(1);
+    tree_diff_node_t* denumerator = _OP(4);
+    link_nodes(first_factor, numerator, denumerator);
+
+    tree_diff_node_t* base_of_pow = _OP(1);
+    tree_diff_node_t* exp_of_pow = _NUM(0.5);
+    link_nodes(denumerator, base_of_pow, exp_of_pow);
+
+    tree_diff_node_t* minuend = _NUM(1);
+    tree_diff_node_t* subtrahend = _OP(4);
+    link_nodes(base_of_pow, minuend, subtrahend);
+    
+    tree_diff_node_t* base_of_pow_subtrahend = _COPYL(node);
+    tree_diff_node_t* exp_of_pow_subtrahend = _NUM(2);
+    link_nodes(subtrahend, base_of_pow_subtrahend, exp_of_pow_subtrahend);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_arccos(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* first_factor = _OP(3);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, first_factor, second_factor);
+
+    tree_diff_node_t* numerator = _NUM(-1);
+    tree_diff_node_t* denumerator = _OP(4);
+    link_nodes(first_factor, numerator, denumerator);
+
+    tree_diff_node_t* base_of_pow = _OP(1);
+    tree_diff_node_t* exp_of_pow = _NUM(0.5);
+    link_nodes(denumerator, base_of_pow, exp_of_pow);
+
+    tree_diff_node_t* minuend = _NUM(1);
+    tree_diff_node_t* subtrahend = _OP(4);
+    link_nodes(base_of_pow, minuend, subtrahend);
+    
+    tree_diff_node_t* base_of_pow_subtrahend = _COPYL(node);
+    tree_diff_node_t* exp_of_pow_subtrahend = _NUM(2);
+    link_nodes(subtrahend, base_of_pow_subtrahend, exp_of_pow_subtrahend);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_arctg(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* first_factor = _OP(3);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, first_factor, second_factor);
+
+    tree_diff_node_t* numerator = _NUM(1);
+    tree_diff_node_t* denumerator = _OP(0);
+    link_nodes(first_factor, numerator, denumerator);
+
+    tree_diff_node_t* first_addend = _NUM(1);
+    tree_diff_node_t* second_addend = _OP(4);
+    link_nodes(denumerator, first_addend, second_addend);
+
+    tree_diff_node_t* base_of_pow = _COPYL(node);
+    tree_diff_node_t* exp_of_pow = _NUM(2);
+    link_nodes(second_addend, base_of_pow, exp_of_pow);
+
+    return mul_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* deritative_arcctg(tree_diff_node_t* node){
+    assert(node);
+
+    tree_diff_node_t* mul_node = _OP(2);
+    tree_diff_node_t* first_factor = _OP(3);
+    tree_diff_node_t* second_factor = _DIFFL(node);
+    link_nodes(mul_node, first_factor, second_factor);
+
+    tree_diff_node_t* numerator = _NUM(-1);
+    tree_diff_node_t* denumerator = _OP(0);
+    link_nodes(first_factor, numerator, denumerator);
+
+    tree_diff_node_t* first_addend = _NUM(1);
+    tree_diff_node_t* second_addend = _OP(4);
+    link_nodes(denumerator, first_addend, second_addend);
+
+    tree_diff_node_t* base_of_pow = _COPYL(node);
+    tree_diff_node_t* exp_of_pow = _NUM(2);
+    link_nodes(second_addend, base_of_pow, exp_of_pow);
 
     return mul_node;
 }
