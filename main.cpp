@@ -3,6 +3,8 @@
 #include <malloc.h>
 #include <string.h>
 #include <math.h>
+// TODO: static func!!!!
+// sdelat dynamich massiv perem chtoby mozhno bylo dobvlyat novye
 //-----------------------------------------------------------------
 #define E 2.71828182845904523536 
 //-----------------------------------------------------------------
@@ -66,10 +68,15 @@ tree_diff_node_t* deritative_sum(tree_diff_node_t* node);
 tree_diff_node_t* deritative_difference(tree_diff_node_t* node);
 tree_diff_node_t* deritative_product(tree_diff_node_t* node);
 tree_diff_node_t* deritative_quotient(tree_diff_node_t* node);
+//-----------------------------------------------------------------
 tree_diff_node_t* deritative_general_pow_function(tree_diff_node_t* node);
 tree_diff_node_t* deritative_pow_function(tree_diff_node_t* node);
 tree_diff_node_t* deritative_exponential_function(tree_diff_node_t* node);
 tree_diff_node_t* deritative_pow_and_exponential_function(tree_diff_node_t* node);
+//-----------------------------------------------------------------
+tree_diff_node_t* deritative_log_function(tree_diff_node_t* node);
+tree_diff_node_t* deritative_log_with_const_base_function(tree_diff_node_t* node);
+tree_diff_node_t* deritative_general_log_function(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
@@ -94,6 +101,13 @@ int main(){
 
     link_nodes(pow, base, exp);
 //-----------------------------------------------------------------
+    tree_diff_node_t* log = _OP(5);
+    tree_diff_node_t* base_log = _VAR(0);
+    tree_diff_node_t* arg_log = _VAR(0);
+
+    link_nodes(log, base_log, arg_log);
+//-----------------------------------------------------------------
+
 
     FILE* viz_file = fopen("viz_file.txt", "w");
     assert(viz_file);
@@ -107,10 +121,10 @@ int main(){
     //printf("%lf\n", calculate_subtree(node2));
 
     // tree_diff_node_t* copy_root = subtree_copy(node1);
-    tree_diff_node_t* diff_tree = diff(pow);
+    tree_diff_node_t* diff_tree = diff(log);
 
     tree_viz(diff_tree, file_with_deritative);
-    tree_viz(pow, viz_file);
+    tree_viz(log, viz_file);
     tex_viz_of_tree(diff_tree, formula_tex);
 
     //printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
@@ -254,9 +268,9 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
             fprintf(tex_file, "}");
             return;
         case 4:
-            fprintf(tex_file, "{");
+            fprintf(tex_file, "({");
             tex_viz_of_nodes(node->left, tex_file);
-            fprintf(tex_file, "}");
+            fprintf(tex_file, "})");
             fprintf(tex_file, "^");
             fprintf(tex_file, "{");
             tex_viz_of_nodes(node->right, tex_file);
@@ -416,36 +430,25 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
     assert(node);
     assert(node->type == OP);
 
+    if(isnan(operand1) || isnan(operand2)){
+            printf("Operands error\n");
+            assert(0);
+        }    
+
     switch ((int) node->val/*fix enum*/)
     {
-    case 0:
-        if(isnan(operand1) || isnan(operand2)){
-            printf("Operands error\n");
-            assert(0);
-        }    
-        return operand1 + operand2;
-    case 1:
-        if(isnan(operand1) || isnan(operand2)){
-            printf("Operands error\n");
-            assert(0);
-        }    
-        return operand1 - operand2;
-    case 2:
-        if(isnan(operand1) || isnan(operand2)){
-            printf("Operands error\n");
-            assert(0);
-        }    
-        return operand1 * operand2;
+    case 0: return operand1 + operand2;
+    case 1: return operand1 - operand2;
+    case 2: return operand1 * operand2;
     case 3:
-        if(isnan(operand1) || isnan(operand2)){
-            printf("Operands error\n");
-            assert(0);
-        }
         if(operand2 == 0){
             printf("Division by zero\n");
             assert(0);
         }     
         return operand1 / operand2;
+    case 4: return pow(operand1, operand2);
+    case 5: return log(operand2) / log(operand1);
+
     default:
         printf("Invalid type of operatiom\n");
         return NAN;
@@ -470,9 +473,9 @@ tree_diff_node_t* diff(tree_diff_node_t* node){
             case 4:
                 return deritative_general_pow_function(node);
             case 5:
-                return deritative_logarithm_function(node);
+                return deritative_log_function(node);
             default:
-                return;
+                return NULL;
         }
     }
 
@@ -694,7 +697,7 @@ tree_diff_node_t* deritative_pow_and_exponential_function(tree_diff_node_t* node
 tree_diff_node_t* deritative_log_function(tree_diff_node_t* node){
     assert(node);
     assert(node->type == OP);
-    assert((int) node->type == 5);
+    assert((int) node->val == 5);
 
     if((node->right)->type == NUM && (node->left)->type == NUM) return _NUM(0);
     if((node->left)->type == NUM) return deritative_log_with_const_base_function(node);  
@@ -734,6 +737,49 @@ tree_diff_node_t* deritative_general_log_function(tree_diff_node_t* node){
     assert(node);
     assert(node->type == OP);
     assert(node->val == 5);
+
+    tree_diff_node_t* div_node = _OP(3);
+    tree_diff_node_t* numerator = _OP(1);
+    //------------
+    tree_diff_node_t* denumerator = _OP(4);
+    tree_diff_node_t* base_of_pow = _OP(5);
+    tree_diff_node_t* pow = _NUM(2);
+    link_nodes(denumerator, base_of_pow, pow);
+    tree_diff_node_t* base_log_denum = _NUM(E);
+    tree_diff_node_t* arg_log_denum = _COPYL(node);
+    link_nodes(base_of_pow, base_log_denum, arg_log_denum);
+    //-------------
+    link_nodes(div_node, numerator, denumerator);
+    //-------------
+    tree_diff_node_t* minuend = _OP(2);
+    tree_diff_node_t* first_factor_minuend = _OP(3);
+    tree_diff_node_t* second_factor_minuend = _OP(5);
+    link_nodes(minuend, first_factor_minuend, second_factor_minuend);
+
+    tree_diff_node_t* numerator_first_fact_min = _DIFFR(node);
+    tree_diff_node_t* denumerator_first_fact_min = _COPYR(node);
+    link_nodes(first_factor_minuend, numerator_first_fact_min, denumerator_first_fact_min);
+
+    tree_diff_node_t* base_log_minuend = _NUM(E); 
+    tree_diff_node_t* arg_log_minuend = _COPYL(node);
+    link_nodes(second_factor_minuend, base_log_minuend, arg_log_minuend);
+    //-------------
+    tree_diff_node_t* subtrahend = _OP(2);
+    tree_diff_node_t* first_factor_subtrahend = _OP(3);
+    tree_diff_node_t* second_factor_subtrahend = _OP(5);
+    link_nodes(subtrahend, first_factor_subtrahend, second_factor_subtrahend);
+
+    tree_diff_node_t* numerator_first_fact_sub = _DIFFL(node);
+    tree_diff_node_t* denumerator_first_fact_sub = _COPYL(node);
+    link_nodes(first_factor_subtrahend, numerator_first_fact_sub, denumerator_first_fact_sub);
+
+    tree_diff_node_t* base_log_subtrahend = _NUM(E); 
+    tree_diff_node_t* arg_log_subtrahend = _COPYR(node);
+    link_nodes(second_factor_subtrahend, base_log_subtrahend, arg_log_subtrahend);
+    //-------------
+    link_nodes(numerator, minuend, subtrahend);
+
+    return div_node;
 }
 //----------------------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node){

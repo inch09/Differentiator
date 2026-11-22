@@ -1,8 +1,8 @@
 digraph{
-node0000028ee89f1520[shape = circle, label = "^", style = "filled", fillcolor = "#8cd1e4"];
-node0000028ee89f1550[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
-node0000028ee89f1580[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
-{rank = same; node0000028ee89f1550; node0000028ee89f1580};
-node0000028ee89f1520->node0000028ee89f1550;
-node0000028ee89f1520->node0000028ee89f1580;
+node000001b6e72015b0[shape = circle, label = "log", style = "filled", fillcolor = "#8cd1e4"];
+node000001b6e72015e0[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+node000001b6e7201610[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+{rank = same; node000001b6e72015e0; node000001b6e7201610};
+node000001b6e72015b0->node000001b6e72015e0;
+node000001b6e72015b0->node000001b6e7201610;
 }
