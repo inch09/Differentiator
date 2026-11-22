@@ -82,6 +82,11 @@ tree_diff_node_t* deritative_log_function(tree_diff_node_t* node);
 tree_diff_node_t* deritative_log_with_const_base_function(tree_diff_node_t* node);
 tree_diff_node_t* deritative_general_log_function(tree_diff_node_t* node);
 //-----------------------------------------------------------------
+tree_diff_node_t* deritative_sin(tree_diff_node_t* node);
+tree_diff_node_t* deritative_cos(tree_diff_node_t* node);
+tree_diff_node_t* deritative_tg(tree_diff_node_t* node);
+tree_diff_node_t* deritative_ctg(tree_diff_node_t* node);
+//-----------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
 //-----------------------------------------------------------------
@@ -111,6 +116,16 @@ int main(){
 
     link_nodes(log, base_log, arg_log);
 //-----------------------------------------------------------------
+    tree_diff_node_t* sin = _OP(6);
+    tree_diff_node_t* div_node = _OP(3);
+    tree_diff_node_t* cos = _OP(7);
+    link_nodes(div_node, sin, cos);
+    tree_diff_node_t* sin_arg = _VAR(0);
+    tree_diff_node_t* cos_arg = _VAR(0);
+    link_nodes(sin, sin_arg, NULL);
+    link_nodes(cos, cos_arg, NULL);
+
+//-----------------------------------------------------------------
 
 
     FILE* viz_file = fopen("viz_file.txt", "w");
@@ -125,10 +140,10 @@ int main(){
     //printf("%lf\n", calculate_subtree(node2));
 
     // tree_diff_node_t* copy_root = subtree_copy(node1);
-    tree_diff_node_t* diff_tree = diff(log);
+    tree_diff_node_t* diff_tree = diff(div_node);
 
     tree_viz(diff_tree, file_with_deritative);
-    tree_viz(log, viz_file);
+    tree_viz(div_node, viz_file);
     tex_viz_of_tree(diff_tree, formula_tex);
 
     //printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
@@ -289,6 +304,26 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
             tex_viz_of_nodes(node->right, tex_file);
             fprintf(tex_file, "}}");
             return;
+        case 6:
+            fprintf(tex_file, "\\sin({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 7:
+            fprintf(tex_file, "\\cos({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 8:
+            fprintf(tex_file, "\\tan({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;
+        case 9:
+            fprintf(tex_file, "\\cot({");
+            tex_viz_of_nodes(node->left, tex_file);
+            fprintf(tex_file, "})");
+            return;    
         default:
             fprintf(tex_file, "Invalid type of operation\n");
             return;
@@ -363,6 +398,18 @@ void create_op_node_viz(tree_diff_node_t* node, FILE* viz_file){
     case 5:
         strcpy(oper_name, "log");
         break;
+    case 6:
+        strcpy(oper_name, "sin");
+        break;
+    case 7:
+        strcpy(oper_name, "cos");
+        break;
+    case 8:
+        strcpy(oper_name, "tg");
+        break;  
+    case 9:
+        strcpy(oper_name, "ctg");
+        break;                
     default:
         printf("Invalid type of operatiom\n");
         break;
@@ -452,6 +499,11 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
         return operand1 / operand2;
     case 4: return pow(operand1, operand2);
     case 5: return log(operand2) / log(operand1);
+    case 6: return sin(operand1);
+    case 7: return cos(operand1);
+    case 8: return tan(operand1);
+    case 9: return 1 / tan(operand1);
+
 
     default:
         printf("Invalid type of operatiom\n");
@@ -478,6 +530,14 @@ tree_diff_node_t* diff(tree_diff_node_t* node){
                 return deritative_general_pow_function(node);
             case 5:
                 return deritative_log_function(node);
+            case 6:
+                return deritative_sin(node);
+            case 7:
+                return deritative_cos(node);
+            case 8:
+                return deritative_tg(node);
+            case 9:
+                return deritative_ctg(node);    
             default:
                 return NULL;
         }
