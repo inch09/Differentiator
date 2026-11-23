@@ -70,6 +70,8 @@ void create_num_node_viz(tree_diff_node_t* node, FILE* viz_file);
 //-----------------------------------------------------------------
 double calculate_subtree(tree_diff_node_t* node, double val_of_var);
 double calculate_operation(tree_diff_node_t* node, double operand1, double operand2);
+double calculate_constant_subtree(tree_diff_node_t* node);
+void constant_folding_tree(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 tree_diff_node_t* diff(tree_diff_node_t* node);
 tree_diff_node_t* deritative_sum(tree_diff_node_t* node);
@@ -97,6 +99,7 @@ tree_diff_node_t* deritative_arcctg(tree_diff_node_t* node);
 //-----------------------------------------------------------------
 tree_diff_node_t* subtree_copy(tree_diff_node_t* node);
 tree_diff_node_t* node_copy(tree_diff_node_t* node);
+tree_diff_node_t* node_copy_without_new_node(tree_diff_node_t* node_copy_to, tree_diff_node_t* node_copy_from);
 //-----------------------------------------------------------------
 int main(){
 //-----------------------------------------------------------------
@@ -141,6 +144,12 @@ int main(){
     link_nodes(arg_arcsin, base_pow_arg_arcsin, exp_pow_arg_arcsin);
     link_nodes(arcsin, arg_arcsin, NULL);
 // ----------------------------------------------------------------
+    tree_diff_node_t* pow_2 = _OP(4);
+    tree_diff_node_t* base_2 = _VAR(0);
+    tree_diff_node_t* exp_2 = _NUM(2);
+
+    link_nodes(pow_2, base_2, exp_2);
+// ----------------------------------------------------------------
 
 
     FILE* viz_file = fopen("viz_file.txt", "w");
@@ -155,10 +164,11 @@ int main(){
     //printf("%lf\n", calculate_subtree(node2));
 
     // tree_diff_node_t* copy_root = subtree_copy(node1);
-    tree_diff_node_t* diff_tree = diff(arcsin);
+    tree_diff_node_t* diff_tree = diff(node1);
 
+    constant_folding_tree(diff_tree);
     tree_viz(diff_tree, file_with_deritative);
-    tree_viz(arcsin, viz_file);
+    tree_viz(node1, viz_file);
     tex_viz_of_tree(diff_tree, formula_tex);
 
     //printf("%lf\n", calculate_subtree(diff_tree, sqrt(2)));
@@ -533,10 +543,10 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
     assert(node);
     assert(node->type == OP);
 
-    if(isnan(operand1) || isnan(operand2)){
+    if(isnan(operand1) && isnan(operand2)){
             printf("Operands error\n");
             assert(0);
-        }    
+    }    
 
     switch ((int) node->val/*fix enum*/)
     {
@@ -583,34 +593,33 @@ double calculate_constant_subtree(tree_diff_node_t* node){
             operand2 = calculate_constant_subtree(node->right);
             if(operand2 == NAN) return NAN;
         }
+        if(!is_node_have_left(node) && !is_node_have_right(node)){
+            return NAN;
+        }
         return calculate_operation(node, operand1, operand2);
     }
 
     return NAN;
 }
 //----------------------------------------------------------------------------
-tree_diff_node_t* constant_folding_tree(tree_diff_node_t* node){
+void constant_folding_tree(tree_diff_node_t* node){
     assert(node);
 
     double value = calculate_constant_subtree(node);
     if(value != NAN){
         tree_diff_node_t* value_of_tree = _NUM(value);
-        if(is_node_have_left(node)) delete_tree(node->left);
+        if(is_node_have_left(node))  delete_tree(node->left);
         if(is_node_have_right(node)) delete_tree(node->right);
-        
-        if(is_node_have_parent(node)){
-            if((node->parent)->left == node) (node->parent)->left = value_of_tree;
-            if((node->parent)->right == node) (node->parent)->right = value_of_tree;
-            value_of_tree->parent = node->parent;
-            delete_node(node);
-        }
-
-         return _NUM(value);
+    
+        node_copy_without_new_node(node, value_of_tree);
+        free(value_of_tree);
+        return;
     }
 
-    if(is_node_have_left(node)) 
+    if( is_node_have_left(node)) constant_folding_tree(node->left);
+    if(is_node_have_right(node)) constant_folding_tree(node->right);
 
-
+    return;
 }
 //----------------------------------------------------------------------------
 tree_diff_node_t* diff(tree_diff_node_t* node){
@@ -1168,4 +1177,17 @@ tree_diff_node_t* node_copy(tree_diff_node_t* node){
     copy_node->parent = node->parent;
 
     return copy_node;
+}
+//----------------------------------------------------------------------------
+tree_diff_node_t* node_copy_without_new_node(tree_diff_node_t* node_copy_to, tree_diff_node_t* node_copy_from){
+    assert(node_copy_to);
+    assert(node_copy_from);
+
+    node_copy_to->type   = node_copy_from->type;
+    node_copy_to->val    = node_copy_from->val;
+    node_copy_to->left   = node_copy_from->left;
+    node_copy_to->right  = node_copy_from->right;
+    node_copy_to->parent = node_copy_from->parent;
+
+    return node_copy_to;
 }
