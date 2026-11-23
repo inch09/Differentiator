@@ -653,14 +653,16 @@ void delete_neutral_add_and_sub_elements(tree_diff_node_t* node){
     assert((int) node->val == 0 || (int) node->val == 1);
 
     if((node->left)->type == NUM && (node->left)->val == 0){
+        tree_diff_node_t* copy_ptr = node->right;
         node_copy_without_new_node(node, node->right);
-        link_nodes(node, (node->right)->left, (node->right)->right);
-        free(node->right);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
     else if((node->right)->type == NUM && (node->right)->val == 0){
+        tree_diff_node_t* copy_ptr = node->left;
         node_copy_without_new_node(node, node->left);
-        link_nodes(node, (node->left)->left, (node->left)->right);
-        free(node->left);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
 }
 //----------------------------------------------------------------------------
@@ -670,14 +672,16 @@ void delete_neutral_mul_elements(tree_diff_node_t* node){
     assert((int) node->val == 2);
 
     if((node->left)->type == NUM && (node->left)->val == 1){
+        tree_diff_node_t* copy_ptr = node->right;
         node_copy_without_new_node(node, node->right);
-        link_nodes(node, (node->right)->left, (node->right)->right);
-        free(node->right);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
     else if((node->right)->type == NUM && (node->right)->val == 1){
+        tree_diff_node_t* copy_ptr = node->left;
         node_copy_without_new_node(node, node->left);
-        link_nodes(node, (node->left)->left, (node->left)->right);
-        free(node->left);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
     else if( ((node->left)->type == NUM &&  (node->left)->val == 0) || 
             ((node->right)->type == NUM && (node->right)->val == 0)){
@@ -695,9 +699,10 @@ void delete_neutral_div_elements(tree_diff_node_t* node){
     assert((int) node->val == 3);
 
     if((node->right)->type == NUM && (node->right)->val == 1){
+        tree_diff_node_t* copy_ptr = node->left;
         node_copy_without_new_node(node, node->left);
-        link_nodes(node, (node->left)->left, (node->left)->right);
-        free(node->left);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
     else if((node->left)->type == NUM &&  (node->left)->val == 0){
         if(is_node_have_left(node))  delete_tree(node->left);
@@ -721,9 +726,10 @@ void delete_neutral_pow_elements(tree_diff_node_t* node){
         free(one_node);
     }
     else if((node->right)->type == NUM && (node->right)->val == 1){
+        tree_diff_node_t* copy_ptr = node->left;
         node_copy_without_new_node(node, node->left);
-        link_nodes(node, (node->left)->left, (node->left)->right);
-        free(node->left);
+        link_nodes(node, node->left, node->right);
+        free(copy_ptr);
     }
     else if((node->left)->type == NUM &&  (node->left)->val == 0){
         if(is_node_have_left(node))  delete_tree(node->left);

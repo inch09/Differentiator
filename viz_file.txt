@@ -1,0 +1,18 @@
+digraph{
+node000002c7a1c813d0[shape = circle, label = "/", style = "filled", fillcolor = "#8cd1e4"];
+node000002c7a1c81400[shape = circle, label = "+", style = "filled", fillcolor = "#8cd1e4"];
+node000002c7a1c81430[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+node000002c7a1c81460[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+{rank = same; node000002c7a1c81430; node000002c7a1c81460};
+node000002c7a1c81490[shape = circle, label = "*", style = "filled", fillcolor = "#8cd1e4"];
+node000002c7a1c814c0[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+node000002c7a1c814f0[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+{rank = same; node000002c7a1c814c0; node000002c7a1c814f0};
+{rank = same; node000002c7a1c81400; node000002c7a1c81490};
+node000002c7a1c813d0->node000002c7a1c81400;
+node000002c7a1c81400->node000002c7a1c81430;
+node000002c7a1c81400->node000002c7a1c81460;
+node000002c7a1c813d0->node000002c7a1c81490;
+node000002c7a1c81490->node000002c7a1c814c0;
+node000002c7a1c81490->node000002c7a1c814f0;
+}
