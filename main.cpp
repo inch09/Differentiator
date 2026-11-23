@@ -544,8 +544,8 @@ double calculate_operation(tree_diff_node_t* node, double operand1, double opera
     assert(node->type == OP);
 
     if(isnan(operand1) && isnan(operand2)){
-            printf("Operands error\n");
-            assert(0);
+        printf("Operands error\n");
+        assert(0);
     }    
 
     switch ((int) node->val/*fix enum*/)
@@ -587,15 +587,17 @@ double calculate_constant_subtree(tree_diff_node_t* node){
         double operand2 = NAN;
         if(is_node_have_left(node)){
             operand1 = calculate_constant_subtree(node->left);
-            if(operand1 == NAN) return NAN;
+            if(isnan(operand1)) return NAN;
         }
         if(is_node_have_right(node)){
             operand2 = calculate_constant_subtree(node->right);
-            if(operand2 == NAN) return NAN;
+            if(isnan(operand2)) return NAN;
         }
         if(!is_node_have_left(node) && !is_node_have_right(node)){
             return NAN;
         }
+        if(isnan(operand1) && isnan(operand2)) return NAN;
+        //printf("o1 = %lf, o2 = %lf\n", operand1, operand2);
         return calculate_operation(node, operand1, operand2);
     }
 
@@ -606,7 +608,7 @@ void constant_folding_tree(tree_diff_node_t* node){
     assert(node);
 
     double value = calculate_constant_subtree(node);
-    if(value != NAN){
+    if(!isnan(value)){
         tree_diff_node_t* value_of_tree = _NUM(value);
         if(is_node_have_left(node))  delete_tree(node->left);
         if(is_node_have_right(node)) delete_tree(node->right);
