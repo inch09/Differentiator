@@ -5,24 +5,7 @@
 #include <math.h>
 // TODO: static func!!!!
 // sdelat dynamich massiv perem chtoby mozhno bylo dobvlyat novye
-//-----------------------------------------------------------------
-const node_value add_union =    {.op_type = ADD};
-const node_value sub_union =    {.op_type = SUB}; 
-const node_value mul_union =    {.op_type = MUL}; 
-const node_value div_union =    {.op_type = DIV}; 
-const node_value pow_union =    {.op_type = POW}; 
-const node_value log_union =    {.op_type = LOG}; 
-const node_value sin_union =    {.op_type = SIN}; 
-const node_value cos_union =    {.op_type = COS}; 
-const node_value tg_union =     {.op_type = TG}; 
-const node_value ctg_union =    {.op_type = CTG};
-const node_value arcsin_union = {.op_type = ARCSIN}; 
-const node_value arccos_union = {.op_type = ARCCOS}; 
-const node_value arctg_union =  {.op_type = ARCTG}; 
-const node_value arcctg_union = {.op_type = ARCCTG}; 
-//-----------------------------------------------------------------
-const node_value var_x = {.var = X};
-const node_value var_y = {.var = Y};
+
 //-----------------------------------------------------------------
 #define _ADD()    create_node(OP, add_union, NULL, NULL, NULL)
 #define _SUB()    create_node(OP, sub_union, NULL, NULL, NULL)
@@ -92,6 +75,24 @@ struct tree_diff_node_t{
     tree_diff_node_t* right;
     tree_diff_node_t* parent;
 };
+//-----------------------------------------------------------------
+const node_value add_union =    {.op_type = ADD};
+const node_value sub_union =    {.op_type = SUB}; 
+const node_value mul_union =    {.op_type = MUL}; 
+const node_value div_union =    {.op_type = DIV}; 
+const node_value pow_union =    {.op_type = POW}; 
+const node_value log_union =    {.op_type = LOG}; 
+const node_value sin_union =    {.op_type = SIN}; 
+const node_value cos_union =    {.op_type = COS}; 
+const node_value tg_union =     {.op_type = TG}; 
+const node_value ctg_union =    {.op_type = CTG};
+const node_value arcsin_union = {.op_type = ARCSIN}; 
+const node_value arccos_union = {.op_type = ARCCOS}; 
+const node_value arctg_union =  {.op_type = ARCTG}; 
+const node_value arcctg_union = {.op_type = ARCCTG}; 
+//-----------------------------------------------------------------
+const node_value var_x = {.var = X};
+const node_value var_y = {.var = Y};
 //-----------------------------------------------------------------
 tree_diff_node_t* create_node(type_of_node type, node_value val, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
 tree_diff_node_t* create_num_node(type_of_node type, double num, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
@@ -268,7 +269,7 @@ tree_diff_node_t* create_num_node(type_of_node type, double num, tree_diff_node_
     assert(type == NUM);
 
     node_value union_num = {.num = num};
-    tree_diff_node_t* new_node = create_node(NUM, union_num, NULL, NULL, NULL);
+    tree_diff_node_t* new_node = create_node(NUM, union_num, left, right, parent);
     return new_node;
 }
 //-----------------------------------------------------------------
@@ -276,7 +277,7 @@ tree_diff_node_t* create_var_node(type_of_node type, type_of_variable var, tree_
     assert(type == NUM);
 
     node_value union_var = {.var = var};
-    tree_diff_node_t* new_node = create_node(NUM, union_var, NULL, NULL, NULL);
+    tree_diff_node_t* new_node = create_node(NUM, union_var, left, right, parent);
     return new_node;
 }
 //-----------------------------------------------------------------
@@ -748,20 +749,20 @@ void delete_neutral_mul_elements(tree_diff_node_t* node){
     assert(node->type == OP);
     assert((node->val).op_type == MUL);
 
-    if((node->left)->type == NUM && ((node->left)->val).op_type == 1){
+    if((node->left)->type == NUM && ((node->left)->val).num == 1){
         tree_diff_node_t* copy_ptr = node->right;
         node_copy_without_new_node(node, node->right);
         link_nodes(node, node->left, node->right);
         free(copy_ptr);
     }
-    else if((node->right)->type == NUM && ((node->right)->val).op_type == 1){
+    else if((node->right)->type == NUM && ((node->right)->val).num == 1){
         tree_diff_node_t* copy_ptr = node->left;
         node_copy_without_new_node(node, node->left);
         link_nodes(node, node->left, node->right);
         free(copy_ptr);
     }
-    else if( ((node->left)->type == NUM &&  ((node->left)->val).op_type == 0) || 
-            ((node->right)->type == NUM && ((node->right)->val).op_type == 0)){
+    else if( ((node->left)->type == NUM &&  ((node->left)->val).num == 0) || 
+            ((node->right)->type == NUM && ((node->right)->val).num == 0)){
         if(is_node_have_left(node))  delete_tree(node->left);
         if(is_node_have_right(node)) delete_tree(node->right);
         tree_diff_node_t* zero_node = _NUM(0);
