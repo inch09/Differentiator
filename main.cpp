@@ -39,16 +39,17 @@ const node_value var_y = {.var = Y};
 #define _ARCTG()  create_node(OP, arctg_union, NULL, NULL, NULL)
 #define _ARCCTG() create_node(OP, arcctg_union, NULL, NULL, NULL)
 //-----------------------------------------------------------------
+#define _VAR(variable)  create_var_node(VAR, variable, NULL, NULL, NULL)
 #define _VARX() create_node(VAR, var_x, NULL, NULL, NULL)
 #define _VARY() create_node(VAR, var_y, NULL, NULL, NULL)
 //-----------------------------------------------------------------
-#define _NUM(value)    create_node(NUM, value, NULL, NULL, NULL)
-#define _VAR(variable) create_node(VAR, variable, NULL, NULL, NULL)
-#define _OP(operation) create_node(OP, operation, NULL, NULL, NULL)
-#define _DIFFL(node)   diff(node->left)
-#define _DIFFR(node)   diff(node->right)
-#define _COPYL(node)   subtree_copy(node->left)
-#define _COPYR(node)   subtree_copy(node->right)
+#define _NUM(val) create_num_node(NUM, val, NULL, NULL, NULL)
+//-----------------------------------------------------------------
+#define _OP(operation)  create_node(OP, operation, NULL, NULL, NULL)
+#define _DIFFL(node)    diff(node->left)
+#define _DIFFR(node)    diff(node->right)
+#define _COPYL(node)    subtree_copy(node->left)
+#define _COPYR(node)    subtree_copy(node->right)
 //-----------------------------------------------------------------
 enum type_of_node{
     OP  = 0,
@@ -92,7 +93,9 @@ struct tree_diff_node_t{
     tree_diff_node_t* parent;
 };
 //-----------------------------------------------------------------
-tree_diff_node_t* create_node(type_of_node type, double val, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
+tree_diff_node_t* create_node(type_of_node type, node_value val, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
+tree_diff_node_t* create_num_node(type_of_node type, double num, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
+tree_diff_node_t* create_var_node(type_of_node type, type_of_variable var, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent);
 void delete_node(tree_diff_node_t* node);
 void delete_tree(tree_diff_node_t* node);
 //-----------------------------------------------------------------
@@ -155,13 +158,13 @@ tree_diff_node_t* node_copy_without_new_node(tree_diff_node_t* node_copy_to, tre
 //-----------------------------------------------------------------
 int main(){
 //-----------------------------------------------------------------
-    tree_diff_node_t* node1 = create_node(OP, 3, NULL, NULL, NULL);
-    tree_diff_node_t* node2 = create_node(OP, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node3 = create_node(VAR, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node4 = create_node(VAR, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node5 = create_node(OP, 2, NULL, NULL, NULL);
-    tree_diff_node_t* node6 = create_node(VAR, 0, NULL, NULL, NULL);
-    tree_diff_node_t* node7 = create_node(VAR, 0, NULL, NULL, NULL);
+    tree_diff_node_t* node1 = _DIV();
+    tree_diff_node_t* node2 = _ADD();
+    tree_diff_node_t* node3 = _VARX();
+    tree_diff_node_t* node4 = _VARX();
+    tree_diff_node_t* node5 = _MUL();
+    tree_diff_node_t* node6 = _VARX();
+    tree_diff_node_t* node7 = _VARX();
 
     link_nodes(node1, node2, node5);
     link_nodes(node2, node3, node4);
@@ -261,6 +264,22 @@ tree_diff_node_t* create_node(type_of_node type, node_value val, tree_diff_node_
     return new_node;
 }
 //-----------------------------------------------------------------
+tree_diff_node_t* create_num_node(type_of_node type, double num, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent){
+    assert(type == NUM);
+
+    node_value union_num = {.num = num};
+    tree_diff_node_t* new_node = create_node(NUM, union_num, NULL, NULL, NULL);
+    return new_node;
+}
+//-----------------------------------------------------------------
+tree_diff_node_t* create_var_node(type_of_node type, type_of_variable var, tree_diff_node_t* left, tree_diff_node_t* right, tree_diff_node_t* parent){
+    assert(type == NUM);
+
+    node_value union_var = {.var = var};
+    tree_diff_node_t* new_node = create_node(NUM, union_var, NULL, NULL, NULL);
+    return new_node;
+}
+//-----------------------------------------------------------------
 void delete_node(tree_diff_node_t* node){
     assert(node);
     free(node);
@@ -336,8 +355,8 @@ void tex_viz_of_nodes(tree_diff_node_t* node, FILE* tex_file){
     assert(tex_file);
 
     if(node->type == NUM){ 
-        printf("%lg\n", node->val);
-        fprintf(tex_file, "{%lg}", node->val);
+        printf("%lg\n", (node->val).num);
+        fprintf(tex_file, "{%lg}", (node->val).num);
         return;
     }
     if(node->type == VAR){
@@ -571,7 +590,7 @@ void create_num_node_viz(tree_diff_node_t* node, FILE* viz_file){
     assert(viz_file);
     assert(node->type == NUM);
 
-    fprintf(viz_file, "node%p[shape = Mrecord, label = \"%lg\", style = \"filled\", fillcolor = \"#f79eef\"];\n", (void*) node, node->val);
+    fprintf(viz_file, "node%p[shape = Mrecord, label = \"%lg\", style = \"filled\", fillcolor = \"#f79eef\"];\n", (void*) node, (node->val).num);
 }
 //----------------------------------------------------------------------------
 void create_edge_viz(tree_diff_node_t* node, FILE* viz_file){
@@ -946,12 +965,12 @@ tree_diff_node_t* deritative_pow_function(tree_diff_node_t* node){
     if((node->left)->type == NUM) return _NUM(0);
     if((node->left)->type == VAR){
         tree_diff_node_t* mul_node = _MUL();
-        tree_diff_node_t* first_factor = _NUM((node->right)->val);
+        tree_diff_node_t* first_factor = _NUM(((node->right)->val).num);
         tree_diff_node_t* second_factor = _POW();
         link_nodes(mul_node, first_factor, second_factor);
 
-        tree_diff_node_t* var_node = _VAR((node->left)->val);
-        tree_diff_node_t* pow_node = _NUM(((node->right)->val) - 1);
+        tree_diff_node_t* var_node = _VAR(((node->left)->val).var);
+        tree_diff_node_t* pow_node = _NUM(((node->right)->val).num - 1);
         link_nodes(second_factor, var_node, pow_node);
         return mul_node;
     }
@@ -961,12 +980,12 @@ tree_diff_node_t* deritative_pow_function(tree_diff_node_t* node){
         tree_diff_node_t* second_global_factor = _DIFFL(node);
         link_nodes(global_mul_mode, first_global_factor, second_global_factor);
 
-        tree_diff_node_t* first_factor = _NUM((node->right)->val);
+        tree_diff_node_t* first_factor = _NUM(((node->right)->val).num);
         tree_diff_node_t* second_factor = _POW();
         link_nodes(first_global_factor, first_factor, second_factor);
 
         tree_diff_node_t* base_of_power = _COPYL(node);
-        tree_diff_node_t* exponent_of_power = _NUM(((node->right)->val) - 1);
+        tree_diff_node_t* exponent_of_power = _NUM(((node->right)->val).num - 1);
         link_nodes(second_factor, base_of_power, exponent_of_power);
 
         return global_mul_mode;
@@ -989,12 +1008,12 @@ tree_diff_node_t* deritative_exponential_function(tree_diff_node_t* node){
         tree_diff_node_t* second_factor = _LOG();
         link_nodes(mul_node, first_factor, second_factor);
 
-        tree_diff_node_t* base_of_power = _NUM((node->left)->val);
-        tree_diff_node_t* exponent_of_power = _VAR(node->val);
+        tree_diff_node_t* base_of_power = _NUM(((node->left)->val).num);
+        tree_diff_node_t* exponent_of_power = _VAR((node->val).var);
         link_nodes(first_factor, base_of_power, exponent_of_power);
 
         tree_diff_node_t* base_of_logarithm = _NUM(M_E);
-        tree_diff_node_t* argument_of_logarithm = _NUM((node->left)->val);
+        tree_diff_node_t* argument_of_logarithm = _NUM(((node->left)->val).num);
         link_nodes(second_factor, base_of_logarithm, argument_of_logarithm);
 
         return mul_node;
@@ -1009,12 +1028,12 @@ tree_diff_node_t* deritative_exponential_function(tree_diff_node_t* node){
         tree_diff_node_t* second_factor = _LOG();
         link_nodes(first_global_factor, first_factor, second_factor);
 
-        tree_diff_node_t* base_of_power = _NUM((node->left)->val);
+        tree_diff_node_t* base_of_power = _NUM(((node->left)->val).num);
         tree_diff_node_t* exponent_of_power = _COPYR(node);
         link_nodes(first_factor, base_of_power, exponent_of_power);
 
         tree_diff_node_t* base_of_logarithm = _NUM(M_E);
-        tree_diff_node_t* argument_of_logarithm = _NUM((node->left)->val);
+        tree_diff_node_t* argument_of_logarithm = _NUM(((node->left)->val).num);
         link_nodes(second_factor, base_of_logarithm, argument_of_logarithm);
 
         return global_mul_node;
@@ -1087,7 +1106,7 @@ tree_diff_node_t* deritative_log_with_const_base_function(tree_diff_node_t* node
         tree_diff_node_t* first_factor_in_denumerator = _COPYR(node);
         tree_diff_node_t* second_factor_in_denumerator = _LOG();
         tree_diff_node_t* base_of_logarithm = _NUM(M_E);
-        tree_diff_node_t* argument_of_logarithm = _NUM((node->left)->val);
+        tree_diff_node_t* argument_of_logarithm = _NUM(((node->left)->val).num);
         link_nodes(denumerator_node, first_factor_in_denumerator, second_factor_in_denumerator);
         link_nodes(second_factor_in_denumerator, base_of_logarithm, argument_of_logarithm);
 
@@ -1354,6 +1373,19 @@ tree_diff_node_t* node_copy(tree_diff_node_t* node){
     assert(copy_node);
 
     copy_node->type = node->type;
+    switch(node->type){
+        case OP:
+            (copy_node->val).op_type = (node->val).op_type;
+            break;
+        case VAR:
+            (copy_node->val).var = (node->val).var;
+            break;
+        case NUM:
+            (copy_node->val).num = (node->val).num;
+            break;
+        default:
+            break;
+    }
     copy_node->val = node->val;
     copy_node->left = node->left;
     copy_node->right = node->right;
@@ -1367,7 +1399,19 @@ tree_diff_node_t* node_copy_without_new_node(tree_diff_node_t* node_copy_to, tre
     assert(node_copy_from);
 
     node_copy_to->type   = node_copy_from->type;
-    node_copy_to->val    = node_copy_from->val;
+    switch(node_copy_from->type){
+        case OP:
+            (node_copy_to->val).op_type = (node_copy_from->val).op_type;
+            break;
+        case VAR:
+            (node_copy_to->val).var = (node_copy_from->val).var;
+            break;
+        case NUM:
+            (node_copy_to->val).num = (node_copy_from->val).num;
+            break;
+        default:
+            break;
+    }
     node_copy_to->left   = node_copy_from->left;
     node_copy_to->right  = node_copy_from->right;
     node_copy_to->parent = node_copy_from->parent;
