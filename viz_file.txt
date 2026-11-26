@@ -1,13 +1,20 @@
 digraph{
-node00000204bf921720[shape = circle, label = "log", style = "filled", fillcolor = "#8cd1e4"];
-node00000204bf9216f0[shape = circle, label = "+", style = "filled", fillcolor = "#8cd1e4"];
-node00000204bf921990[shape = square, label = "y", style = "filled", fillcolor = "#fff0b6"];
-node00000204bf9268a0[shape = Mrecord, label = "3", style = "filled", fillcolor = "#f79eef"];
-{rank = same; node00000204bf921990; node00000204bf9268a0};
-node00000204bf9268d0[shape = Mrecord, label = "4", style = "filled", fillcolor = "#f79eef"];
-{rank = same; node00000204bf9216f0; node00000204bf9268d0};
-node00000204bf921720->node00000204bf9216f0;
-node00000204bf9216f0->node00000204bf921990;
-node00000204bf9216f0->node00000204bf9268a0;
-node00000204bf921720->node00000204bf9268d0;
+node0000022a5eba1540[shape = circle, label = "sin", style = "filled", fillcolor = "#8cd1e4"];
+node0000022a5eba1590[shape = circle, label = "/", style = "filled", fillcolor = "#8cd1e4"];
+node0000022a5eba15e0[shape = circle, label = "+", style = "filled", fillcolor = "#8cd1e4"];
+node0000022a5eba1630[shape = Mrecord, label = "1", style = "filled", fillcolor = "#f79eef"];
+node0000022a5eba1680[shape = square, label = "x", style = "filled", fillcolor = "#fff0b6"];
+{rank = same; node0000022a5eba1630; node0000022a5eba1680};
+node0000022a5eba16d0[shape = circle, label = "-", style = "filled", fillcolor = "#8cd1e4"];
+node0000022a5eba1720[shape = Mrecord, label = "9", style = "filled", fillcolor = "#f79eef"];
+node0000022a5eba1770[shape = square, label = "y", style = "filled", fillcolor = "#fff0b6"];
+{rank = same; node0000022a5eba1720; node0000022a5eba1770};
+{rank = same; node0000022a5eba15e0; node0000022a5eba16d0};
+node0000022a5eba1540->node0000022a5eba1590;
+node0000022a5eba1590->node0000022a5eba15e0;
+node0000022a5eba15e0->node0000022a5eba1630;
+node0000022a5eba15e0->node0000022a5eba1680;
+node0000022a5eba1590->node0000022a5eba16d0;
+node0000022a5eba16d0->node0000022a5eba1720;
+node0000022a5eba16d0->node0000022a5eba1770;
 }
