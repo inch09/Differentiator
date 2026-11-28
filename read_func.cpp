@@ -51,22 +51,25 @@ char* convert_str_to_read_pre_order(const char* str_buf){
 tree_diff_node_t* parse_pre_order(const char* str_buf){
     assert(str_buf);
 
+    static char* convert_str = convert_str_to_read_pre_order(str_buf);
+    assert(convert_str);
+    
     int num_of_child = 0;
     static int ind_in_str = 0;
 
-    tree_diff_node_t* node = parse_node_data(str_buf + ind_in_str);
+    tree_diff_node_t* node = parse_node_data(convert_str + ind_in_str);
     assert(node);
 
-    while (str_buf[ind_in_str] != '\0'){
-        if(str_buf[ind_in_str] == '('){ 
+    while (convert_str[ind_in_str] != '\0'){
+        if(convert_str[ind_in_str] == '('){ 
             num_of_child++;
             ind_in_str++;
-            tree_diff_node_t* child_node = parse_pre_order(str_buf); 
+            tree_diff_node_t* child_node = parse_pre_order(convert_str); 
             set_node_parent(child_node, node);
             if(num_of_child == 1) set_node_left (node, child_node);
             if(num_of_child == 2) set_node_right(node, child_node);
         }
-        else if(str_buf[ind_in_str] == ')'){
+        else if(convert_str[ind_in_str] == ')'){
             ind_in_str++; 
             return node;
         }    
@@ -74,6 +77,7 @@ tree_diff_node_t* parse_pre_order(const char* str_buf){
     }
 
     ind_in_str = 0;
+    free(convert_str);
     return node;
 }
 //----------------------------------------------------------------------------

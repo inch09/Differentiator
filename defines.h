@@ -3,6 +3,7 @@
 
 extern const char* arr_operations[]; 
 extern const char* arr_variables[];
+
 //-----------------------------------------------------------------
 enum type_of_node{
     OP  = 0,
@@ -26,6 +27,11 @@ enum type_of_operation{
     ARCTG = 12,
     ARCCTG = 13
 };
+//-----------------------------------------------------------------
+struct variable{
+    char* name;
+    double value;
+};    
 //-----------------------------------------------------------------
 enum type_of_variable{
     X = 0,
